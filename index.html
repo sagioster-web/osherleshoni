@@ -1,0 +1,523 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>עושר לשוני - משחק לימודי</title>
+    <!-- ייבוא פונט נעים וקריא בעברית -->
+    <link href="https://fonts.googleapis.com/css2?family=Assistant:wght@400;700&family=Fredoka:wght@500;600&display=swap" rel="stylesheet">
+    
+    <!-- ייבוא ספריית EmailJS לשליחת מיילים אוטומטית -->
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
+    <script type="text/javascript">
+        (function() {
+            // אתחול המערכת עם המפתח הציבורי שלך
+            emailjs.init("USa57nqXpe8fsDWtb"); 
+        })();
+    </script>
+
+    <style>
+        :root {
+            --primary-color: #4A90E2;
+            --secondary-color: #FF9F1C;
+            --accent-color: #FF6B6B;
+            --success-color: #2EC4B6;
+            --bg-gradient: linear-gradient(135deg, #A1C4FD 0%, #C2E9FB 100%);
+        }
+
+        body {
+            font-family: 'Assistant', sans-serif;
+            background: var(--bg-gradient);
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            color: #333;
+        }
+
+        .container {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 30px;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.15);
+            width: 90%;
+            max-width: 800px;
+            padding: 40px;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+            /* מסגרת צבעונית עבה */
+            border: 8px solid var(--primary-color);
+        }
+
+        h1 {
+            color: var(--primary-color);
+            font-family: 'Fredoka', sans-serif;
+            font-size: 3rem;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 0px rgba(0,0,0,0.1);
+        }
+
+        h2 {
+            font-size: 1.5rem;
+            color: #666;
+            margin-bottom: 20px;
+        }
+
+        /* עיצוב תמונת הפתיחה */
+        .cover-image {
+            max-width: 100%;
+            max-height: 250px;
+            width: auto;
+            border-radius: 15px;
+            margin-bottom: 15px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            object-fit: contain;
+            display: block;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        /* עיצוב מילה מודגשת במשפט */
+        .highlight-word {
+            color: #D32F2F;
+            font-weight: bold;
+            text-decoration: none;
+            border-bottom: 4px solid #FF6B6B;
+            padding-bottom: 8px;
+            display: inline-block;
+            line-height: 1.2;
+            background-color: rgba(255, 235, 59, 0.3);
+            padding-left: 5px;
+            padding-right: 5px;
+            border-radius: 5px;
+        }
+
+        /* שדות קלט וכפתורים */
+        .input-group { margin: 20px 0; }
+
+        input[type="text"] {
+            font-size: 1.4rem;
+            padding: 15px;
+            border: 3px solid #BDE0FE;
+            border-radius: 15px;
+            width: 70%;
+            text-align: center;
+            font-family: 'Assistant', sans-serif;
+            outline: none;
+            transition: border-color 0.3s;
+        }
+
+        input[type="text"]:focus { border-color: var(--primary-color); }
+
+        .btn {
+            background-color: var(--secondary-color);
+            color: white;
+            border: none;
+            padding: 15px 50px;
+            font-size: 1.8rem;
+            border-radius: 50px;
+            cursor: pointer;
+            box-shadow: 0 5px 15px rgba(255, 159, 28, 0.4);
+            transition: transform 0.2s, background 0.2s;
+            font-family: 'Fredoka', sans-serif;
+            margin-top: 10px;
+        }
+
+        .btn:hover {
+            transform: scale(1.05) translateY(-3px);
+            background-color: #E88D0C;
+        }
+
+        /* אזור המשחק */
+        .game-screen { display: none; }
+
+        .progress-container {
+            width: 100%;
+            height: 15px;
+            background-color: #E0E0E0;
+            border-radius: 10px;
+            margin-bottom: 40px;
+            overflow: hidden;
+            border: 2px solid #fff;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #FF9F1C, #FF6B6B);
+            width: 0%;
+            transition: width 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            border-radius: 10px;
+        }
+
+        .sentence-box {
+            background-color: #F0F8FF;
+            padding: 40px 20px;
+            border-radius: 20px;
+            margin-bottom: 30px;
+            font-size: 2.2rem;
+            line-height: 1.6;
+            border: 3px solid #BDE0FE;
+            box-shadow: inset 0 0 20px rgba(74, 144, 226, 0.1);
+        }
+
+        .question-text {
+            font-size: 1.6rem;
+            margin-bottom: 25px;
+            color: #444;
+            font-weight: bold;
+        }
+
+        .options-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        .option-btn {
+            background-color: white;
+            border: 3px solid #eee;
+            color: #555;
+            padding: 20px;
+            font-size: 1.6rem;
+            border-radius: 18px;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-family: 'Assistant', sans-serif;
+            box-shadow: 0 4px 0 #eee; 
+            position: relative;
+            top: 0;
+        }
+
+        /* צבעים שונים לכפתורים */
+        .option-btn:nth-child(1) { border-color: #FFADAD; box-shadow: 0 4px 0 #FFADAD; }
+        .option-btn:nth-child(2) { border-color: #FFD6A5; box-shadow: 0 4px 0 #FFD6A5; }
+        .option-btn:nth-child(3) { border-color: #FDFFB6; box-shadow: 0 4px 0 #FDFFB6; border-bottom-color: #E0E090; box-shadow: 0 4px 0 #E0E090;}
+        .option-btn:nth-child(4) { border-color: #CAFFBF; box-shadow: 0 4px 0 #CAFFBF; border-bottom-color: #98D68D; box-shadow: 0 4px 0 #98D68D;}
+
+        .option-btn:hover {
+            transform: translateY(-2px);
+            background-color: #fff;
+        }
+
+        .option-btn.correct {
+            background-color: #2EC4B6 !important;
+            color: white !important;
+            border-color: #25A296 !important;
+            box-shadow: 0 4px 0 #25A296 !important;
+        }
+
+        .option-btn.wrong {
+            background-color: #FF6B6B !important;
+            color: white !important;
+            border-color: #D64545 !important;
+            box-shadow: 0 4px 0 #D64545 !important;
+        }
+
+        /* מסך סיום */
+        .end-screen { display: none; }
+
+        .score-circle {
+            width: 150px;
+            height: 150px;
+            background: #fff;
+            border: 8px solid var(--secondary-color);
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 3.5rem;
+            font-weight: bold;
+            color: var(--secondary-color);
+            margin: 0 auto 30px;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+        }
+
+        .status-message {
+            font-size: 1.2rem;
+            color: #666;
+            margin-top: 20px;
+            font-weight: bold;
+        }
+
+        /* אנימציות */
+        .fade-in { animation: fadeIn 0.6s cubic-bezier(0.23, 1, 0.32, 1); }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(30px) scale(0.95); } to { opacity: 1; transform: translateY(0) scale(1); } }
+        
+        @media (max-width: 600px) {
+            .options-grid { grid-template-columns: 1fr; }
+            .sentence-box { font-size: 1.6rem; padding: 20px; }
+            h1 { font-size: 2.2rem; }
+            .container { padding: 20px; width: 95%; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <!-- מסך פתיחה -->
+        <div id="start-screen" class="fade-in">
+            <!-- השינוי בוצע כאן: שם קובץ פשוט -->
+            <img src="cover.jpg" alt="עושר לשוני - תמונה פותחת" class="cover-image">
+            
+            <h1>עוֹשֶׁר לְשׁוֹנִי</h1>
+            <h2>מִשְׂחָק לְהַעֲשָׁרַת אוֹצַר הַמִּלִּים</h2>
+            
+            <div class="input-group">
+                <input type="text" id="studentName" placeholder="הַקְלֵד אֶת שִׁמְךָ כָּאן..." autocomplete="off">
+            </div>
+
+            <button class="btn" onclick="startGame()">הַתְחֵל מִשְׂחָק!</button>
+        </div>
+
+        <!-- מסך המשחק -->
+        <div id="game-screen" class="game-screen fade-in">
+            <div class="progress-container">
+                <div id="progress-fill" class="progress-fill"></div>
+            </div>
+            <div id="question-container"></div>
+        </div>
+
+        <!-- מסך סיום -->
+        <div id="end-screen" class="end-screen fade-in">
+            <img src="https://img.icons8.com/color/96/000000/trophy.png" alt="גביע" style="transform: scale(1.3); margin-bottom: 20px;">
+            <h1>כָּל הַכָּבוֹד!</h1>
+            <p class="feedback-message" id="end-message" style="font-size: 1.8rem; margin-bottom: 20px;">סִיַּמְתָּ אֶת הַמְּשִׂימָה בְּהַצְלָחָה!</p>
+            
+            <div class="score-circle">
+                <span id="final-score">0</span>
+            </div>
+
+            <!-- אזור סטטוס שליחה -->
+            <div id="sending-status" class="status-message">
+                ⏳ שׁוֹלֵחַ דּוּ"חַ סִכּוּם לַמּוֹרֶה...
+            </div>
+            
+            <br>
+            <button class="btn" style="background-color: #E0E0E0; color: #555; font-size: 1.2rem; padding: 10px 30px;" onclick="location.reload()">🔄 הַתְחֵל מֵחָדָשׁ</button>
+        </div>
+    </div>
+
+    <script>
+        // מאגר 20 השאלות מהדפים
+        const questions = [
+            { sentence: "רוֹנֵן מִתְבּוֹנֵן בַּתְמוּנָה <span class='highlight-word'>בְּעִיוּן</span> רַב.", word: "בְּעִיוּן", options: ["בְּרִכּוּז", "בַּהֲנָאָה", "בְּאִטִיּוּת", "בְּעֵינָיו"], correct: 0 },
+            { sentence: "מֵרַב בִּקְשָׁה מִמֵנִי לֹא לְסַפֵּר אֶת הָ<span class='highlight-word'>רָז</span> שֶׁסְפְּרָה לִי.", word: "רָז", options: ["סִפּוּר", "סוֹד", "שְׁמוּעָה", "מִלָּה"], correct: 1 },
+            { sentence: "בַּכְּנִיסָה לַבַּיִת שֶׁלִי יֵשׁ <span class='highlight-word'>מַרְבָּד</span> קָטָן שֶׁעָלָיו הַכֶּלֶב שֶׁלִי שׁוֹכֵב.", word: "מַרְבָּד", options: ["שָׁטִיחַ", "כָּרִית", "שְׂמִיכָה", "מִזְרָן"], correct: 0 },
+            { sentence: "הַמּוֹרָה קָרְאָה אֶת הַ<span class='highlight-word'>בֵּאוּר</span> שֶׁל דִבְרֵי חז\"ל.", word: "בֵּאוּר", options: ["הֶסְבֵּר", "סִכּוּם", "פִּתְגָּם", "דִּבְרֵי חָכְמָה"], correct: 0 },
+            { sentence: "דָנִי <span class='highlight-word'>פָּסַע</span> בַּשְׂדֵרָה עִם כַּלְבּוֹ הָאָהוּב.", word: "פָּסַע", options: ["צָעַד", "נָסַע", "יָשַׁב", "רָץ"], correct: 0 },
+            { sentence: "מִיכָאֵל <span class='highlight-word'>רוֹטֵן</span> עַל כַּמּוּת שִׁעוּרֵי הַבַּיִת.", word: "רוֹטֵן", options: ["מִתְלוֹנֵן", "כּוֹעֵס", "מְאֻכְזָב", "עָצוּב"], correct: 0 },
+            { sentence: "אִמָּא בָּאָה בַּזְמָן לַחוּג וְכֹל הַכַּעַס שֶׁל רוֹן <span class='highlight-word'>הִתְפּוֹגֵג</span>.", word: "הִתְפּוֹגֵג", options: ["נֶעֱלַם", "גָּדַל", "נִשְׁאַר", "הִתְחַזֵּק"], correct: 0 },
+            { sentence: "ט\"וּ בִּשְׁבָט הִגִיעַ חַג לָ<span class='highlight-word'>אִילָנוֹת</span>.", word: "אִילָנוֹת", options: ["עֵצִים", "צְמָחִים", "שְּׁתִילִים", "פְּרָחִים"], correct: 0 },
+            { sentence: "גִיל הַמְשִׁיךְ בִּנְסִיעָה <span class='highlight-word'>רְצוּפָה</span> עַל אוֹפָּנַיו.", word: "רְצוּפָה", options: ["לְלֹא הַפְסָקָה", "לְלֹא רָצוּף", "מְעַנְיֶנֶת", "אִטִּית"], correct: 0 },
+            { sentence: "שִׁירָה הִבְחִינָה שֶׁמַשֶׁהוּ <span class='highlight-word'>זָע</span> בָּעֵשֶׂב וְנִבְהֲלָה מְאֹד.", word: "זָע", options: ["זָז", "נוֹפֵל", "צוֹמֵחַ", "יָשֵׁן"], correct: 0 },
+            { sentence: "נִירָה שָׁמְעָה קוֹל <span class='highlight-word'>חֲבָטָה</span>.", word: "חֲבָטָה", options: ["מַכָּה", "צְעָקָה", "צִלְצוּל", "לְחִישָׁה"], correct: 0 },
+            { sentence: "הָעַכְבָּרוֹן <span class='highlight-word'>נִבְהַל</span> בִּרְאוֹתוֹ אֶת הֶחָתוּל.", word: "נִבְהַל", options: ["פָּחַד", "בָּרַח", "קָפַץ", "צָחַק"], correct: 0 },
+            { sentence: "כַּאֲשֶׁר הַצִּפּוֹר <span class='highlight-word'>הֶחֱלִימָה</span> הִיא עָפָה אֶל אֶרֶץ רְחוֹקָה.", word: "הֶחֱלִימָה", options: ["הִבְרִיאָה", "קָפְצָה", "הִתְעוֹפְפָה", "בָּכְתָה"], correct: 0 },
+            { sentence: "אִמָּא <span class='highlight-word'>נֶאֶלְצָה</span> לָצֵאת בִּמְקוֹמוֹ שֶׁל סַבָּא לַמַּטָּע.", word: "נֶאֶלְצָה", options: ["הֻכְרְחָה", "בִּקְשָׁה", "שָׂמְחָה", "הִתְמִידָה"], correct: 0 },
+            { sentence: "הַכַּדּוּר הִתְגַּלְגֵּל לַכְּבִישׁ וְהַנֶּהָג <span class='highlight-word'>בָּלַם</span> אֶת הַמְּכוֹנִית.", word: "בָּלַם", options: ["עָצַר", "סוֹבֵב", "סָגַר", "בָּדַק"], correct: 0 },
+            { sentence: "טַל מַרְבֶּה <span class='highlight-word'>לְסַיֵּר</span> בַּסְּבִיבָה.", word: "לְסַיֵּר", options: ["לְטַיֵּל", "לִלְמֹד", "לִרְחֹץ", "לִכְתֹּב"], correct: 0 },
+            { sentence: "יוֹנִי <span class='highlight-word'>שָׁב</span> מִבֵּית הַסֵּפֶר שָׂמֵחַ.", word: "שָׁב", options: ["חָזַר", "הָלַךְ", "רָץ", "יָשַׁב"], correct: 0 },
+            { sentence: "קֶרֶן <span class='highlight-word'>מְסַיַּעַת</span> לְהָכִין תַּחְפּוֹשֶׂת.", word: "מְסַיַּעַת", options: ["עוֹזֶרֶת", "מַסִּיעָה", "מְצַיֶּרֶת", "גּוֹזֶרֶת"], correct: 0 },
+            { sentence: "עִידָן שָׁתַל שְׁתִיל <span class='highlight-word'>זָעִיר</span> בַּגּוּמָה.", word: "זָעִיר", options: ["קָטָן", "גָּדוֹל", "זָהִיר", "חָמוּד"], correct: 0 },
+            { sentence: "מִיכָאֵל <span class='highlight-word'>שׁוֹטֵט</span> בַּשְּׁכוּנָה.", word: "שׁוֹטֵט", options: ["הִתְהַלֵּךְ", "דִּלֵּג", "חִפֵּשׂ", "רָץ"], correct: 0 }
+        ];
+
+        let currentQuestionIndex = 0;
+        let score = 0;
+        let studentName = "";
+        let answersLog = [];
+
+        function startGame() {
+            const nameInput = document.getElementById("studentName");
+            if (nameInput.value.trim() === "") {
+                alert("בְּבַקָּשָׁה כְּתוֹב אֶת שִׁמְךָ 🙏");
+                return;
+            }
+            studentName = nameInput.value;
+            
+            document.getElementById("start-screen").style.display = "none";
+            document.getElementById("game-screen").style.display = "block";
+            
+            showQuestion();
+        }
+
+        function showQuestion() {
+            const q = questions[currentQuestionIndex];
+            const container = document.getElementById("question-container");
+            
+            const progressPercent = (currentQuestionIndex / questions.length) * 100;
+            document.getElementById("progress-fill").style.width = progressPercent + "%";
+
+            let indices = q.options.map((_, i) => i);
+            indices = shuffleArray(indices);
+
+            let optionsHtml = "";
+            indices.forEach(index => {
+                optionsHtml += `<button class="option-btn" onclick="checkAnswer(${index}, this)">${q.options[index]}</button>`;
+            });
+
+            container.innerHTML = `
+                <div class="sentence-box fade-in">${q.sentence}</div>
+                <div class="question-text">מָה פֵּרוּשׁ הַמִּלָה: <span style="color: var(--secondary-color); font-size: 1.8rem;">${q.word}</span>?</div>
+                <div class="options-grid fade-in">
+                    ${optionsHtml}
+                </div>
+            `;
+        }
+
+        function checkAnswer(selectedIndex, btnElement) {
+            const allBtns = document.querySelectorAll(".option-btn");
+            allBtns.forEach(btn => btn.disabled = true);
+
+            const q = questions[currentQuestionIndex];
+            const isCorrect = selectedIndex === q.correct;
+            
+            answersLog.push({
+                question: q.word,
+                studentAnswer: q.options[selectedIndex],
+                isCorrect: isCorrect,
+                correctAnswer: q.options[q.correct]
+            });
+
+            if (isCorrect) {
+                btnElement.classList.add("correct");
+                score++;
+            } else {
+                btnElement.classList.add("wrong");
+                allBtns.forEach(btn => {
+                    if (btn.innerText === q.options[q.correct]) {
+                        btn.classList.add("correct");
+                    }
+                });
+            }
+
+            setTimeout(() => {
+                currentQuestionIndex++;
+                if (currentQuestionIndex < questions.length) {
+                    showQuestion();
+                } else {
+                    endGame();
+                }
+            }, 1800);
+        }
+
+        function shuffleArray(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+            return array;
+        }
+
+        function endGame() {
+            document.getElementById("game-screen").style.display = "none";
+            document.getElementById("end-screen").style.display = "block";
+            
+            const finalScoreElement = document.getElementById("final-score");
+            const grade = Math.round((score / questions.length) * 100);
+            
+            let currentNum = 0;
+            const interval = setInterval(() => {
+                if(currentNum >= grade) {
+                    clearInterval(interval);
+                    finalScoreElement.innerText = grade;
+                } else {
+                    currentNum++;
+                    finalScoreElement.innerText = currentNum;
+                }
+            }, 20);
+
+            const message = document.getElementById("end-message");
+            if (grade === 100) message.innerHTML = "🏆 מֻשְׁלָם! אַתָּה אַלּוּף הָעִבְרִית!";
+            else if (grade >= 80) message.innerHTML = "✨ כָּל הַכָּבוֹד! הִצְלַחְתָּ מְאוֹד!";
+            else message.innerHTML = "👍 יָפֶה! הִמְשֵׁךְ לְתַרְגֵּל.";
+
+            // הפעלת השליחה האוטומטית בעת סיום
+            sendReportAutomatically();
+        }
+
+        function sendReportAutomatically() {
+            const date = new Date().toLocaleDateString("he-IL");
+            const grade = Math.round((score / questions.length) * 100);
+            
+            // --- לוגיקת המלצות פדגוגית ---
+            let recommendation = "";
+            let masteryLevel = "";
+            
+            // זיהוי מילים שגויות
+            const wrongWords = answersLog
+                .filter(log => !log.isCorrect)
+                .map(log => log.question);
+
+            const wrongWordsString = wrongWords.length > 0 ? wrongWords.join(", ") : "אין טעויות";
+
+            // קביעת המלצה לפי ציון
+            if (grade >= 90) {
+                masteryLevel = "מצוין";
+                recommendation = "התלמיד שולט היטב באוצר המילים. מומלץ לחזק את הביטחון ולהתקדם לרמה הבאה.";
+            } else if (grade >= 70) {
+                masteryLevel = "טוב";
+                recommendation = `התלמיד מגלה הבנה טובה אך נדרש דיוק. מומלץ לחזור ספציפית על המילים השגויות המפורטות מטה.`;
+            } else {
+                masteryLevel = "נדרש חיזוק";
+                recommendation = `הציון מעיד על קושי באוצר המילים הנלמד. מומלץ לבצע **שינון מוגבר** של המילים השגויות ולבצע את המשחק שוב לאחר תרגול.`;
+            }
+
+            // בניית ה-HTML של הדו"ח עבור המייל
+            let reportDetails = `<div dir="rtl" style="font-family: Arial, sans-serif;">`;
+            reportDetails += `<b>תאריך:</b> ${date}<br>`;
+            reportDetails += `<b>שם התלמיד:</b> ${studentName}<br><br>`;
+            reportDetails += `<b>ציון סופי:</b> <span style="color: red; font-weight: bold; font-size: 1.2em;">${grade}</span><br><br>`;
+            reportDetails += `<b>אחוזי הצלחה:</b> ${grade}% (${score} מתוך ${questions.length} שאלות נכונות)<br>`;
+            
+            reportDetails += `<hr>`;
+            reportDetails += `<h3>📊 סיכום ומסקנות:</h3>`;
+            reportDetails += `<b>רמת שליטה:</b> ${masteryLevel}<br>`;
+            reportDetails += `<b>המלצה למורה:</b> ${recommendation}<br><br>`;
+            
+            if (wrongWords.length > 0) {
+                reportDetails += `<div style="background-color: #ffe6e6; padding: 10px; border-radius: 5px; border: 1px solid #ffcccc;">`;
+                reportDetails += `<b>⚠️ מילים לחיזוק (ריכוז טעויות):</b><br>${wrongWordsString}`;
+                reportDetails += `</div><br>`;
+            } else {
+                reportDetails += `<div style="background-color: #e6fffa; padding: 10px; border-radius: 5px; border: 1px solid #b2f5ea;">`;
+                reportDetails += `👏 <b>כל הכבוד!</b> אין מילים לחיזוק.`;
+                reportDetails += `</div><br>`;
+            }
+            
+            reportDetails += `<hr>`;
+            reportDetails += `<h3>פירוט תשובות מלא:</h3>`;
+            
+            answersLog.forEach((log, index) => {
+                const statusColor = log.isCorrect ? "green" : "red";
+                reportDetails += `<div>${index + 1}. <b>מילה:</b> ${log.question} - <span style="color:${statusColor}">${log.isCorrect ? 'נכון' : 'שגוי'}</span> ${!log.isCorrect ? '(בחר: ' + log.studentAnswer + ')' : ''}</div>`;
+            });
+            
+            reportDetails += `</div>`;
+
+            const templateParams = {
+                student_name: studentName,
+                score: grade,
+                report_details: reportDetails
+            };
+
+            const statusDiv = document.getElementById("sending-status");
+
+            // שליחה ל-EmailJS עם המזהים שהגדרת
+            emailjs.send('service_wkr43mk', 'template_a8cn3jf', templateParams)
+                .then(function(response) {
+                   console.log('SUCCESS!', response.status, response.text);
+                   statusDiv.innerHTML = "✅ הַדּוּ\"חַ נִשְׁלַח לַמּוֹרֶה בְּהַצְלָחָה!";
+                   statusDiv.style.color = "#2EC4B6";
+                }, function(error) {
+                   console.log('FAILED...', error);
+                   statusDiv.innerHTML = "❌ שְׁגִיאָה בִּשְׁלִיחַת הַדּוּ\"חַ. אָנָּא צַלֵּם מָסָךְ.";
+                   statusDiv.style.color = "#FF6B6B";
+                });
+        }
+    </script>
+</body>
+</html>
