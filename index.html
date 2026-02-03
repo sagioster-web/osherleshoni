@@ -14,6 +14,10 @@
             // אתחול המערכת עם המפתח הציבורי שלך
             emailjs.init("USa57nqXpe8fsDWtb"); 
         })();
+        
+        // הגדרת המזהים הקבועים שלך
+        const SERVICE_ID = "service_wkr43mk";
+        const TEMPLATE_ID = "template_a8cn3jf";
     </script>
 
     <style>
@@ -47,7 +51,6 @@
             text-align: center;
             position: relative;
             overflow: hidden;
-            /* מסגרת צבעונית עבה */
             border: 8px solid var(--primary-color);
         }
 
@@ -67,12 +70,12 @@
 
         /* עיצוב תמונת הפתיחה */
         .cover-image {
-            max-width: 100%;
-            max-height: 250px;
-            width: auto;
+            max-width: 400px;
+            width: 100%;
+            height: auto;
             border-radius: 15px;
-            margin-bottom: 15px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
             object-fit: contain;
             display: block;
             margin-left: auto;
@@ -128,6 +131,20 @@
         .btn:hover {
             transform: scale(1.05) translateY(-3px);
             background-color: #E88D0C;
+        }
+
+        /* כפתור דילוג */
+        .btn-skip {
+            background-color: #95a5a6;
+            font-size: 1.2rem;
+            padding: 10px 30px;
+            margin-top: 25px;
+            box-shadow: none;
+        }
+        
+        .btn-skip:hover {
+            background-color: #7f8c8d;
+            transform: none;
         }
 
         /* אזור המשחק */
@@ -259,8 +276,10 @@
     <div class="container">
         <!-- מסך פתיחה -->
         <div id="start-screen" class="fade-in">
-            <!-- השינוי בוצע כאן: שם קובץ פשוט -->
-            <img src="cover.jpg" alt="עושר לשוני - תמונה פותחת" class="cover-image">
+            <!-- התמונה שלך -->
+            <img src="Gemini_Generated_Image_gkum3rgkum3rgkum.jpg" 
+                 onerror="this.src='https://img.icons8.com/clouds/300/000000/book.png'"
+                 alt="עושר לשוני - תמונה פותחת" class="cover-image">
             
             <h1>עוֹשֶׁר לְשׁוֹנִי</h1>
             <h2>מִשְׂחָק לְהַעֲשָׁרַת אוֹצַר הַמִּלִּים</h2>
@@ -278,6 +297,9 @@
                 <div id="progress-fill" class="progress-fill"></div>
             </div>
             <div id="question-container"></div>
+            
+            <!-- כפתור דילוג חדש -->
+            <button id="skip-btn" class="btn btn-skip" onclick="skipQuestion()">דַּלֵּג עַל הַשְּׁאֵלָה ⏩</button>
         </div>
 
         <!-- מסך סיום -->
@@ -303,26 +325,26 @@
     <script>
         // מאגר 20 השאלות מהדפים
         const questions = [
-            { sentence: "רוֹנֵן מִתְבּוֹנֵן בַּתְמוּנָה <span class='highlight-word'>בְּעִיוּן</span> רַב.", word: "בְּעִיוּן", options: ["בְּרִכּוּז", "בַּהֲנָאָה", "בְּאִטִיּוּת", "בְּעֵינָיו"], correct: 0 },
-            { sentence: "מֵרַב בִּקְשָׁה מִמֵנִי לֹא לְסַפֵּר אֶת הָ<span class='highlight-word'>רָז</span> שֶׁסְפְּרָה לִי.", word: "רָז", options: ["סִפּוּר", "סוֹד", "שְׁמוּעָה", "מִלָּה"], correct: 1 },
-            { sentence: "בַּכְּנִיסָה לַבַּיִת שֶׁלִי יֵשׁ <span class='highlight-word'>מַרְבָּד</span> קָטָן שֶׁעָלָיו הַכֶּלֶב שֶׁלִי שׁוֹכֵב.", word: "מַרְבָּד", options: ["שָׁטִיחַ", "כָּרִית", "שְׂמִיכָה", "מִזְרָן"], correct: 0 },
-            { sentence: "הַמּוֹרָה קָרְאָה אֶת הַ<span class='highlight-word'>בֵּאוּר</span> שֶׁל דִבְרֵי חז\"ל.", word: "בֵּאוּר", options: ["הֶסְבֵּר", "סִכּוּם", "פִּתְגָּם", "דִּבְרֵי חָכְמָה"], correct: 0 },
-            { sentence: "דָנִי <span class='highlight-word'>פָּסַע</span> בַּשְׂדֵרָה עִם כַּלְבּוֹ הָאָהוּב.", word: "פָּסַע", options: ["צָעַד", "נָסַע", "יָשַׁב", "רָץ"], correct: 0 },
+            { sentence: "רוֹנֵן מִתְבּוֹנֵן בַּתְמוּנָה <span class='highlight-word'>בְּעִיוּן</span> רַב.", word: "בְּעִיוּן", options: ["בְּרִכּוּז", "בַּהֲנָאָה", "בְּאִטִיּוּת", "בְּעֵינָיו"], correct: 0 },
+            { sentence: "מֵרַב בִּקְשָׁה מִמֵנִי לֹא לְסַפֵּר אֶת הָ<span class='highlight-word'>רָז</span> שֶׁסְפְּרָה לִי.", word: "רָז", options: ["סִפּוּר", "סוֹד", "שְׁמוּעָה", "מִלָּה"], correct: 1 },
+            { sentence: "בַּכְּנִיסָה לַבַּיִת שֶׁלִי יֵשׁ <span class='highlight-word'>מַרְבָּד</span> קָטָן שֶׁעָלָיו הַכֶּלֶב שֶׁלִי שׁוֹכֵב.", word: "מַרְבָּד", options: ["שָׁטִיחַ", "כָּרִית", "שְׂמִיכָה", "מִזְרָן"], correct: 0 },
+            { sentence: "הַמּוֹרָה קָרְאָה אֶת הַ<span class='highlight-word'>בֵּאוּר</span> שֶׁל דִבְרֵי חז\"ל.", word: "בֵּאוּר", options: ["הֶסְבֵּר", "סִכּוּם", "פִּתְגָּם", "דִּבְרֵי חָכְמָה"], correct: 0 },
+            { sentence: "דָנִי <span class='highlight-word'>פָּסַע</span> בַּשְׂדֵרָה עִם כַּלְבּוֹ הָאָהוּב.", word: "פָּסַע", options: ["צָעַד", "נָסַע", "יָשַׁב", "רָץ"], correct: 0 },
             { sentence: "מִיכָאֵל <span class='highlight-word'>רוֹטֵן</span> עַל כַּמּוּת שִׁעוּרֵי הַבַּיִת.", word: "רוֹטֵן", options: ["מִתְלוֹנֵן", "כּוֹעֵס", "מְאֻכְזָב", "עָצוּב"], correct: 0 },
-            { sentence: "אִמָּא בָּאָה בַּזְמָן לַחוּג וְכֹל הַכַּעַס שֶׁל רוֹן <span class='highlight-word'>הִתְפּוֹגֵג</span>.", word: "הִתְפּוֹגֵג", options: ["נֶעֱלַם", "גָּדַל", "נִשְׁאַר", "הִתְחַזֵּק"], correct: 0 },
-            { sentence: "ט\"וּ בִּשְׁבָט הִגִיעַ חַג לָ<span class='highlight-word'>אִילָנוֹת</span>.", word: "אִילָנוֹת", options: ["עֵצִים", "צְמָחִים", "שְּׁתִילִים", "פְּרָחִים"], correct: 0 },
-            { sentence: "גִיל הַמְשִׁיךְ בִּנְסִיעָה <span class='highlight-word'>רְצוּפָה</span> עַל אוֹפָּנַיו.", word: "רְצוּפָה", options: ["לְלֹא הַפְסָקָה", "לְלֹא רָצוּף", "מְעַנְיֶנֶת", "אִטִּית"], correct: 0 },
-            { sentence: "שִׁירָה הִבְחִינָה שֶׁמַשֶׁהוּ <span class='highlight-word'>זָע</span> בָּעֵשֶׂב וְנִבְהֲלָה מְאֹד.", word: "זָע", options: ["זָז", "נוֹפֵל", "צוֹמֵחַ", "יָשֵׁן"], correct: 0 },
-            { sentence: "נִירָה שָׁמְעָה קוֹל <span class='highlight-word'>חֲבָטָה</span>.", word: "חֲבָטָה", options: ["מַכָּה", "צְעָקָה", "צִלְצוּל", "לְחִישָׁה"], correct: 0 },
-            { sentence: "הָעַכְבָּרוֹן <span class='highlight-word'>נִבְהַל</span> בִּרְאוֹתוֹ אֶת הֶחָתוּל.", word: "נִבְהַל", options: ["פָּחַד", "בָּרַח", "קָפַץ", "צָחַק"], correct: 0 },
+            { sentence: "אִמָּא בָּאָה בַּזְמָן לַחוּג וְכֹל הַכַּעַס שֶׁל רוֹן <span class='highlight-word'>הִתְפּוֹגֵג</span>.", word: "הִתְפּוֹגֵג", options: ["נֶעֱלַם", "גָּדַל", "נִשְׁאַר", "הִתְחַזֵּק"], correct: 0 },
+            { sentence: "ט\"וּ בִּשְׁבָט הִגִיעַ חַג לָ<span class='highlight-word'>אִילָנוֹת</span>.", word: "אִילָנוֹת", options: ["עֵצִים", "צְמָחִים", "שְּׁתִילִים", "פְּרָחִים"], correct: 0 },
+            { sentence: "גִיל הַמְשִׁיךְ בִּנְסִיעָה <span class='highlight-word'>רְצוּפָה</span> עַל אוֹפָּנַיו.", word: "רְצוּפָה", options: ["לְלֹא הַפְסָקָה", "לְלֹא רָצוּף", "מְעַנְיֶנֶת", "אִטִּית"], correct: 0 },
+            { sentence: "שִׁירָה הִבְחִינָה שֶׁמַשֶׁהוּ <span class='highlight-word'>זָע</span> בָּעֵשֶׂב וְנִבְהֲלָה מְאֹד.", word: "זָע", options: ["זָז", "נוֹפֵל", "צוֹמֵחַ", "יָשֵׁן"], correct: 0 },
+            { sentence: "נִירָה שָׁמְעָה קוֹל <span class='highlight-word'>חֲבָטָה</span>.", word: "חֲבָטָה", options: ["מַכָּה", "צְעָקָה", "צִלְצוּל", "לְחִישָׁה"], correct: 0 },
+            { sentence: "הָעַכְבָּרוֹן <span class='highlight-word'>נִבְהַל</span> בִּרְאוֹתוֹ אֶת הֶחָתוּל.", word: "נִבְהַל", options: ["פָּחַד", "בָּרַח", "קָפַץ", "צָחַק"], correct: 0 },
             { sentence: "כַּאֲשֶׁר הַצִּפּוֹר <span class='highlight-word'>הֶחֱלִימָה</span> הִיא עָפָה אֶל אֶרֶץ רְחוֹקָה.", word: "הֶחֱלִימָה", options: ["הִבְרִיאָה", "קָפְצָה", "הִתְעוֹפְפָה", "בָּכְתָה"], correct: 0 },
             { sentence: "אִמָּא <span class='highlight-word'>נֶאֶלְצָה</span> לָצֵאת בִּמְקוֹמוֹ שֶׁל סַבָּא לַמַּטָּע.", word: "נֶאֶלְצָה", options: ["הֻכְרְחָה", "בִּקְשָׁה", "שָׂמְחָה", "הִתְמִידָה"], correct: 0 },
             { sentence: "הַכַּדּוּר הִתְגַּלְגֵּל לַכְּבִישׁ וְהַנֶּהָג <span class='highlight-word'>בָּלַם</span> אֶת הַמְּכוֹנִית.", word: "בָּלַם", options: ["עָצַר", "סוֹבֵב", "סָגַר", "בָּדַק"], correct: 0 },
-            { sentence: "טַל מַרְבֶּה <span class='highlight-word'>לְסַיֵּר</span> בַּסְּבִיבָה.", word: "לְסַיֵּר", options: ["לְטַיֵּל", "לִלְמֹד", "לִרְחֹץ", "לִכְתֹּב"], correct: 0 },
+            { sentence: "טַל מַרְבֶּה <span class='highlight-word'>לְסַיֵּר</span> בַּסְּבִיבָה.", word: "לְסַיֵּר", options: ["לְטַיֵּל", "לִלְמֹד", "לִרְחֹץ", "לִכְתֹּב"], correct: 0 },
             { sentence: "יוֹנִי <span class='highlight-word'>שָׁב</span> מִבֵּית הַסֵּפֶר שָׂמֵחַ.", word: "שָׁב", options: ["חָזַר", "הָלַךְ", "רָץ", "יָשַׁב"], correct: 0 },
-            { sentence: "קֶרֶן <span class='highlight-word'>מְסַיַּעַת</span> לְהָכִין תַּחְפּוֹשֶׂת.", word: "מְסַיַּעַת", options: ["עוֹזֶרֶת", "מַסִּיעָה", "מְצַיֶּרֶת", "גּוֹזֶרֶת"], correct: 0 },
-            { sentence: "עִידָן שָׁתַל שְׁתִיל <span class='highlight-word'>זָעִיר</span> בַּגּוּמָה.", word: "זָעִיר", options: ["קָטָן", "גָּדוֹל", "זָהִיר", "חָמוּד"], correct: 0 },
-            { sentence: "מִיכָאֵל <span class='highlight-word'>שׁוֹטֵט</span> בַּשְּׁכוּנָה.", word: "שׁוֹטֵט", options: ["הִתְהַלֵּךְ", "דִּלֵּג", "חִפֵּשׂ", "רָץ"], correct: 0 }
+            { sentence: "קֶרֶן <span class='highlight-word'>מְסַיַּעַת</span> לְהָכִין תַּחְפּוֹשֶׂת.", word: "מְסַיַּעַת", options: ["עוֹזֶרֶת", "מַסִּיעָה", "מְצַיֶּרֶת", "גּוֹזֶרֶת"], correct: 0 },
+            { sentence: "עִידָן שָׁתַל שְׁתִיל <span class='highlight-word'>זָעִיר</span> בַּגּוּמָה.", word: "זָעִיר", options: ["קָטָן", "גָּדוֹל", "זָהִיר", "חָמוּד"], correct: 0 },
+            { sentence: "מִיכָאֵל <span class='highlight-word'>שׁוֹטֵט</span> בַּשְּׁכוּנָה.", word: "שׁוֹטֵט", options: ["הִתְהַלֵּךְ", "דִּלֵּג", "חִפֵּשׂ", "רָץ"], correct: 0 }
         ];
 
         let currentQuestionIndex = 0;
@@ -351,6 +373,9 @@
             const progressPercent = (currentQuestionIndex / questions.length) * 100;
             document.getElementById("progress-fill").style.width = progressPercent + "%";
 
+            // אפשר את כפתור הדילוג (למקרה שהיה מוסתר)
+            document.getElementById("skip-btn").style.display = "inline-block";
+
             let indices = q.options.map((_, i) => i);
             indices = shuffleArray(indices);
 
@@ -369,6 +394,9 @@
         }
 
         function checkAnswer(selectedIndex, btnElement) {
+            // הסתרת כפתור הדילוג כדי שלא ילחצו עליו אחרי שענו
+            document.getElementById("skip-btn").style.display = "none";
+
             const allBtns = document.querySelectorAll(".option-btn");
             allBtns.forEach(btn => btn.disabled = true);
 
@@ -395,13 +423,30 @@
             }
 
             setTimeout(() => {
-                currentQuestionIndex++;
-                if (currentQuestionIndex < questions.length) {
-                    showQuestion();
-                } else {
-                    endGame();
-                }
+                nextQuestion();
             }, 1800);
+        }
+
+        function skipQuestion() {
+            const q = questions[currentQuestionIndex];
+            
+            answersLog.push({
+                question: q.word,
+                studentAnswer: "דִּלֵּג (לא ענה)",
+                isCorrect: false,
+                correctAnswer: q.options[q.correct]
+            });
+
+            nextQuestion();
+        }
+
+        function nextQuestion() {
+            currentQuestionIndex++;
+            if (currentQuestionIndex < questions.length) {
+                showQuestion();
+            } else {
+                endGame();
+            }
         }
 
         function shuffleArray(array) {
@@ -443,71 +488,89 @@
             const date = new Date().toLocaleDateString("he-IL");
             const grade = Math.round((score / questions.length) * 100);
             
-            // --- לוגיקת המלצות פדגוגית ---
-            let recommendation = "";
+            // --- לוגיקה פדגוגית לדיווח ---
             let masteryLevel = "";
-            
-            // זיהוי מילים שגויות
-            const wrongWords = answersLog
-                .filter(log => !log.isCorrect)
-                .map(log => log.question);
+            let observations = "";
+            let recommendation = "";
+            let feedbackColor = "red";
 
-            const wrongWordsString = wrongWords.length > 0 ? wrongWords.join(", ") : "אין טעויות";
-
-            // קביעת המלצה לפי ציון
             if (grade >= 90) {
-                masteryLevel = "מצוין";
-                recommendation = "התלמיד שולט היטב באוצר המילים. מומלץ לחזק את הביטחון ולהתקדם לרמה הבאה.";
+                masteryLevel = "מצוין (אוצר מילים עשיר)";
+                observations = "התלמיד מגלה הבנה עמוקה של אוצר המילים הנלמד, כולל מילים ממשלב גבוה. ניכרת יכולת קישור טובה בין המילה להקשר שלה במשפט.";
+                recommendation = "מומלץ לחשוף את התלמיד לטקסטים ברמה מתקדמת יותר המשלבים את המילים הללו, ולעודד אותו להשתמש בהן בכתיבה ובדיבור.";
+                feedbackColor = "green";
             } else if (grade >= 70) {
-                masteryLevel = "טוב";
-                recommendation = `התלמיד מגלה הבנה טובה אך נדרש דיוק. מומלץ לחזור ספציפית על המילים השגויות המפורטות מטה.`;
+                masteryLevel = "טוב (שליטה בסיסית, נדרש דיוק)";
+                observations = "התלמיד מבין את רוב המילים, אך לעיתים מתבלבל בין משמעויות דומות או מילים פחות שכיחות.";
+                recommendation = "מומלץ לחזור על המילים שבהן התלמיד טעה ולבצע תרגול ממוקד: כתיבת משפטים חדשים עם מילים אלו או משחק זיכרון.";
+                feedbackColor = "orange";
             } else {
-                masteryLevel = "נדרש חיזוק";
-                recommendation = `הציון מעיד על קושי באוצר המילים הנלמד. מומלץ לבצע **שינון מוגבר** של המילים השגויות ולבצע את המשחק שוב לאחר תרגול.`;
+                masteryLevel = "נדרש חיזוק משמעותי";
+                observations = "ניכר קושי בהבנת אוצר המילים הבסיסי ביחידה זו. התלמיד מתקשה לקשר בין המילה לפירושה הנכון.";
+                recommendation = "מומלץ לבצע הטרמה (הכנה מוקדמת) של המילים לפני קריאת הטקסט, להיעזר בתמונות להמחשת המושגים ולתרגל שוב את המילים השגויות.";
+                feedbackColor = "red";
             }
 
-            // בניית ה-HTML של הדו"ח עבור המייל
-            let reportDetails = `<div dir="rtl" style="font-family: Arial, sans-serif;">`;
-            reportDetails += `<b>תאריך:</b> ${date}<br>`;
-            reportDetails += `<b>שם התלמיד:</b> ${studentName}<br><br>`;
-            reportDetails += `<b>ציון סופי:</b> <span style="color: red; font-weight: bold; font-size: 1.2em;">${grade}</span><br><br>`;
-            reportDetails += `<b>אחוזי הצלחה:</b> ${grade}% (${score} מתוך ${questions.length} שאלות נכונות)<br>`;
-            
-            reportDetails += `<hr>`;
-            reportDetails += `<h3>📊 סיכום ומסקנות:</h3>`;
-            reportDetails += `<b>רמת שליטה:</b> ${masteryLevel}<br>`;
-            reportDetails += `<b>המלצה למורה:</b> ${recommendation}<br><br>`;
-            
+            // יצירת רשימת טעויות למיקוד
+            const wrongWords = answersLog.filter(log => !log.isCorrect);
+            let focusArea = "";
             if (wrongWords.length > 0) {
-                reportDetails += `<div style="background-color: #ffe6e6; padding: 10px; border-radius: 5px; border: 1px solid #ffcccc;">`;
-                reportDetails += `<b>⚠️ מילים לחיזוק (ריכוז טעויות):</b><br>${wrongWordsString}`;
-                reportDetails += `</div><br>`;
+                focusArea = `<p><strong>🚩 מילים לחיזוק (טעויות שנרשמו):</strong><br>${wrongWords.map(l => l.question).join(", ")}.</p>`;
             } else {
-                reportDetails += `<div style="background-color: #e6fffa; padding: 10px; border-radius: 5px; border: 1px solid #b2f5ea;">`;
-                reportDetails += `👏 <b>כל הכבוד!</b> אין מילים לחיזוק.`;
-                reportDetails += `</div><br>`;
+                focusArea = `<p><strong>🚩 מילים לחיזוק:</strong> לא נרשמו טעויות. ביצוע מושלם.</p>`;
             }
+
+            // בניית ה-HTML של הדו"ח (עיצוב משופר)
+            let reportHTML = `<div dir="rtl" style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; color:#333; line-height:1.6;">`;
             
-            reportDetails += `<hr>`;
-            reportDetails += `<h3>פירוט תשובות מלא:</h3>`;
+            // כותרת ראשית
+            reportHTML += `<div style="background-color:${feedbackColor}; color:white; padding:15px; border-radius:8px 8px 0 0; text-align:center;">`;
+            reportHTML += `<h2 style="margin:0;">דוח מיומנות: עושר לשוני</h2>`;
+            reportHTML += `</div>`;
+            
+            // פרטים אישיים וציון
+            reportHTML += `<div style="border:1px solid #ddd; border-top:none; padding:20px; border-radius:0 0 8px 8px; background-color:#fff;">`;
+            reportHTML += `<p style="font-size:1.1em;"><strong>שם התלמיד:</strong> ${studentName}</p>`;
+            reportHTML += `<p><strong>תאריך הביצוע:</strong> ${date}</p>`;
+            reportHTML += `<p style="font-size:1.2em; border-bottom:1px solid #eee; padding-bottom:15px;"><strong>ציון סופי:</strong> <span style="color:${feedbackColor}; font-weight:bold;">${grade}</span> (${score} מתוך ${questions.length} תשובות נכונות)</p>`;
+            
+            // ניתוח פדגוגי
+            reportHTML += `<h3 style="color:#444; margin-top:20px;">📊 ניתוח פדגוגי ומסקנות:</h3>`;
+            reportHTML += `<div style="background-color:#f9f9f9; padding:15px; border-left:4px solid ${feedbackColor}; border-radius:4px;">`;
+            reportHTML += `<p><strong>רמת שליטה:</strong> ${masteryLevel}</p>`;
+            reportHTML += `<p><strong>אבחון:</strong> ${observations}</p>`;
+            reportHTML += `<p><strong>המלצה להמשך עבודה:</strong> ${recommendation}</p>`;
+            reportHTML += focusArea;
+            reportHTML += `</div>`;
+            
+            // פירוט תשובות
+            reportHTML += `<h3 style="color:#444; margin-top:30px;">פירוט תשובות מלא:</h3>`;
             
             answersLog.forEach((log, index) => {
-                const statusColor = log.isCorrect ? "green" : "red";
-                reportDetails += `<div>${index + 1}. <b>מילה:</b> ${log.question} - <span style="color:${statusColor}">${log.isCorrect ? 'נכון' : 'שגוי'}</span> ${!log.isCorrect ? '(בחר: ' + log.studentAnswer + ')' : ''}</div>`;
+                const statusText = log.isCorrect ? "✅ נכון" : "❌ שגוי";
+                const rowColor = log.isCorrect ? "#f0fff4" : "#fff5f5";
+                const borderColor = log.isCorrect ? "#c6f6d5" : "#fed7d7";
+                
+                reportHTML += `<div style="background-color:${rowColor}; padding:10px; margin-bottom:8px; border-radius:6px; border:1px solid ${borderColor};">`;
+                reportHTML += `<strong>${index + 1}. ${log.question}</strong>: ${statusText}`;
+                if (!log.isCorrect) {
+                    reportHTML += `<br><span style="color:#d32f2f; font-size:0.9em;">(בחר: ${log.studentAnswer} | נכון: ${log.correctAnswer})</span>`;
+                }
+                reportHTML += `</div>`;
             });
             
-            reportDetails += `</div>`;
+            reportHTML += `</div></div>`;
 
             const templateParams = {
                 student_name: studentName,
                 score: grade,
-                report_details: reportDetails
+                report_details: reportHTML
             };
 
             const statusDiv = document.getElementById("sending-status");
 
             // שליחה ל-EmailJS עם המזהים שהגדרת
-            emailjs.send('service_wkr43mk', 'template_a8cn3jf', templateParams)
+            emailjs.send(SERVICE_ID, TEMPLATE_ID, templateParams)
                 .then(function(response) {
                    console.log('SUCCESS!', response.status, response.text);
                    statusDiv.innerHTML = "✅ הַדּוּ\"חַ נִשְׁלַח לַמּוֹרֶה בְּהַצְלָחָה!";
